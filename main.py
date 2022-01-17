@@ -2,8 +2,7 @@ import readchar
 from colorama import init, Fore, Back, Style
 import time
 
-from bs4 import BeautifulSoup
-import requests, string, random
+from scrape_quote import get_quote
 
 init(autoreset=True)
 
@@ -34,6 +33,9 @@ def start_game(sentence):
 
         if x == "\x7f":
             user_input = user_input[:-1]
+
+        elif x == "\x03":
+            exit()
 
         elif len(x) > 1:
             pass
@@ -79,60 +81,25 @@ def style_string(original, user_input):
             elif active_string[i] == compare[i]:
                 ele = Fore.GREEN + ele
             elif active_string[i] != compare[i]:
-                ele = Fore.RED + ele
+                if active_string[i] == " ":
+                    # print("hello")
+                    ele = Fore.BLUE + Back.RED + ele
+                else:
+                    ele = Fore.RED + ele
 
         print(ele, end="")
 
 
-def scrape_and_clean(url):
-    req = requests.get(url)
-    soup = BeautifulSoup(req.content, features="lxml")
-
-    # get quotes from page
-    div_quotes = soup(
-        "div", attrs={"class": "quoteText"}
-    )  # soup("div") == soup.find_all("div")
-    quotes = []
-    for q in div_quotes:
-        quote = ""
-        # turn multiline quotes/poems into a single string
-        for i in range(len(q.contents)):
-            line = q.contents[i].encode("ascii", errors="ignore").decode("utf-8")
-            if line[0] == "<":  # is tag, ignore characters that aren't part of quote
-                break
-            else:
-                quote += line
-
-        quote = quote.replace("\n", " ").replace("\r", "").strip()
-        quotes.append(quote)
-
-    return quotes
-
-
-def generate_goodreads_url():
-    page_number = random.randint(1, 100)
-    return f"https://www.goodreads.com/quotes?page={page_number}"
-
-
-def get_quote():
-    url = generate_goodreads_url()
-    quotes = scrape_and_clean(url)
-    quote_count = len(quotes) - 1
-
-    return quotes[random.randint(0, quote_count)]
-
-
 if __name__ == "__main__":
     sentence = get_quote()
-    print(sentence)
-    # start_sequence()
-    # total_chracters = len(sentence) + 1
+    start_sequence()
+    total_chracters = len(sentence) + 1
 
-    # start = time.time()
-    # start_game(sentence)
+    start = time.time()
+    start_game(sentence)
 
-    # time_to_type = time.time() - start
-    # print("\n")
+    time_to_type = time.time() - start
+    print("\n")
 
-    # print(f"WORDS PER MINUTE: {(total_chracters/CHAR_IN_WORD * 60/time_to_type):.2f} ")
+    print(f"WORDS PER MINUTE: {(total_chracters/CHAR_IN_WORD * 60/time_to_type):.2f} ")
 
